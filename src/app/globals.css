@@ -1,0 +1,102 @@
+@import "tailwindcss";
+
+/* ─── Design Tokens ─────────────────────────────────────────────────────────── */
+
+:root {
+  /* Colors */
+  --color-paper: #F9F5EE;
+  --color-spice: #C24E1A;
+  --color-spice-light: #F0D5C8;
+  --color-herb: #4A6741;
+  --color-herb-light: #D4E0D2;
+  --color-amber: #D97706;
+  --color-red: #DC2626;
+  --color-text-primary: #1C1917;
+  --color-text-secondary: #78716C;
+  --color-text-muted: #A8A29E;
+  --color-border: #E7E0D5;
+  --color-surface: #FFFFFF;
+
+  /* Spacing (4px base unit) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+
+  /* Radii */
+  --radius-sm: 3px;
+  --radius-md: 6px;
+  --radius-card: 14px;
+  --radius-pill: 999px;
+}
+
+/* ─── Tailwind v4 Theme Extension ────────────────────────────────────────────── */
+
+@theme inline {
+  /* Fonts */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-lora), ui-serif, Georgia, serif;
+
+  /* Colors */
+  --color-paper: var(--color-paper);
+  --color-spice: var(--color-spice);
+  --color-spice-light: var(--color-spice-light);
+  --color-herb: var(--color-herb);
+  --color-herb-light: var(--color-herb-light);
+  --color-amber: var(--color-amber);
+  --color-red: var(--color-red);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+  --color-border: var(--color-border);
+  --color-surface: var(--color-surface);
+
+  /* Radii */
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-card: var(--radius-card);
+  --radius-pill: var(--radius-pill);
+}
+
+/* ─── Base Styles ────────────────────────────────────────────────────────────── */
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-text-primary);
+}
+
+/* Focus rings — always visible, WCAG 3:1 compliant */
+:focus-visible {
+  outline: 2px solid var(--color-spice);
+  outline-offset: 2px;
+}
+
+/* Toast slide-up animation */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
