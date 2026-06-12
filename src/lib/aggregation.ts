@@ -7,6 +7,10 @@ export interface AggregatedIngredient {
   isPantryStaple: boolean;
 }
 
+/**
+ * Merges ingredient lists across all selected items, summing quantities for
+ * identical name+unit pairs and splitting the result into buy vs pantry buckets.
+ */
 export function aggregateIngredients(items: Item[]): {
   buy: AggregatedIngredient[];
   pantry: AggregatedIngredient[];

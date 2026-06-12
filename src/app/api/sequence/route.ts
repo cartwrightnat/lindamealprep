@@ -23,31 +23,46 @@ function buildPrompt(items: Item[], timeWindow: number): string {
     )
     .join("\n");
 
-  return `You are a meal prep sequencer. Given these batch prep items and a ${timeWindow}-minute time window, create an optimal step-by-step game plan.
+  return `You are a meal prep coach creating a fully integrated, parallel-optimized action plan for a ${timeWindow}-minute prep session.
 
-Items:
+Recipes to prepare:
 ${itemDescriptions}
 
-Equipment constraints:
-- Oven: only one item at a time unless oven temps are within 25°F of each other
-- Stovetop: max 2 burners simultaneously
-- Waffle-iron, mixer, blender, food processor, slow cooker: one at a time each
+Your goal is to produce ONE numbered action list that interleaves ALL recipes to maximize efficiency:
+- Schedule the longest/most-passive recipe first (e.g. get it in the oven or simmering before starting hands-on work for others)
+- During any passive/waiting phase (oven, simmer, rest), immediately schedule hands-on steps for a different recipe
+- Break each recipe into individual actions (preheat, chop, mix, sear, set timer, store) rather than one "start" step
+- Include timer reminders for passive phases (e.g. "Set timer for 35 min")
+- End each recipe with a storage step once it is done
+- Never run two recipes on the same single-use equipment simultaneously (waffle-iron, mixer, blender, food processor, slow cooker)
+- Oven: only one recipe at a time unless temps are within 25°F
+- Stovetop: max 2 burners at once
 
-Return ONLY valid JSON matching this exact structure, no markdown fences, no extra text:
+Each step must include the "recipeName" field so steps can be color-coded by recipe.
+
+Return ONLY valid JSON, no markdown fences, no extra text:
 {
   "steps": [
     {
       "order": 1,
-      "action": "Start [item name]",
-      "note": "optional brief note",
-      "storageBadge": "Store in fridge/freezer/pantry",
+      "action": "concise action description",
+      "note": "optional timer or tip",
+      "storageBadge": "Store in fridge/freezer/pantry (only on final step for that recipe, else omit)",
       "items": ["item-id"],
-      "durationMinutes": 15
+      "durationMinutes": 5,
+      "recipeName": "Exact Recipe Name"
     }
   ]
 }`;
 }
 
+/**
+ * POST /api/sequence
+ * Accepts `{ selectedIds: string[], timeWindow: number }` and returns an
+ * AI-generated `{ steps: Step[] }` game plan via Claude.
+ * Falls back with HTTP 500 when the AI call fails so the client can use the
+ * offline sequencer instead.
+ */
 export async function POST(req: NextRequest) {
   // Rate limiting
   const now = Date.now();

@@ -22,7 +22,8 @@ export default function ShoppingListPage() {
       router.replace("/");
       return;
     }
-    setSelectedItems(library.filter((i) => session.selectedIds.includes(i.id)));
+    // localStorage hydration runs once on mount; React 18 batches these updates.
+    setSelectedItems(library.filter((i) => session.selectedIds.includes(i.id))); // eslint-disable-line react-hooks/set-state-in-effect
     setHydrated(true);
   }, [router]);
 
