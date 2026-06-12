@@ -48,6 +48,13 @@ Return ONLY valid JSON matching this exact structure, no markdown fences, no ext
 }`;
 }
 
+/**
+ * POST /api/sequence
+ * Accepts `{ selectedIds: string[], timeWindow: number }` and returns an
+ * AI-generated `{ steps: Step[] }` game plan via Claude.
+ * Falls back with HTTP 500 when the AI call fails so the client can use the
+ * offline sequencer instead.
+ */
 export async function POST(req: NextRequest) {
   // Rate limiting
   const now = Date.now();

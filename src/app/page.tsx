@@ -23,9 +23,10 @@ export default function ItemPickerPage() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
+    // localStorage hydration runs once on mount; React 18 batches these updates.
     const session = loadSession();
     if (session) {
-      setSelectedIds(session.selectedIds);
+      setSelectedIds(session.selectedIds); // eslint-disable-line react-hooks/set-state-in-effect
       setTimeWindow(session.timeWindow);
     }
     setHydrated(true);

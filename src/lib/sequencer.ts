@@ -15,6 +15,11 @@ function ovenConflict(a: Item, b: Item): boolean {
   return Math.abs(a.ovenTemp - b.ovenTemp) > 25;
 }
 
+/**
+ * Produces an ordered list of prep steps for the given items, respecting oven
+ * temperature conflicts, stovetop burner limits, and single-use equipment.
+ * Items with longer total time are scheduled first to maximise passive overlap.
+ */
 export function sequence(items: Item[]): Step[] {
   if (items.length === 0) return [];
 
@@ -23,7 +28,6 @@ export function sequence(items: Item[]): Step[] {
 
   const steps: Step[] = [];
   const scheduled = new Set<string>();
-  let cursor = 0; // running start time
 
   for (let i = 0; i < sorted.length; i++) {
     const item = sorted[i];
@@ -53,8 +57,6 @@ export function sequence(items: Item[]): Step[] {
       if (mustSequence) break;
     }
 
-    const startAt = mustSequence ? cursor : 0;
-
     const storageNote = item.storage.length
       ? `Store in ${item.storage.join(" or ")}`
       : undefined;
@@ -69,7 +71,6 @@ export function sequence(items: Item[]): Step[] {
     });
 
     scheduled.add(item.id);
-    if (mustSequence) cursor += item.totalMinutes;
   }
 
   return steps;

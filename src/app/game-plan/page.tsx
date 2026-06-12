@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/components/Header";
 import PrepStepCard from "@/components/PrepStepCard";
@@ -19,15 +19,22 @@ export default function GamePlanPage() {
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [cooldownUntil, setCooldownUntil] = useState(0);
+  const [isOnCooldown, setIsOnCooldown] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const cooldownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const isOnCooldown = Date.now() < cooldownUntil;
+  useEffect(() => {
+    return () => {
+      if (cooldownTimer.current !== null) clearTimeout(cooldownTimer.current);
+    };
+  }, []);
 
   const fetchGamePlan = useCallback(
     async (items: Item[], timeWindow: number) => {
       setLoading(true);
-      setCooldownUntil(Date.now() + COOLDOWN_MS);
+      setIsOnCooldown(true);
+      if (cooldownTimer.current !== null) clearTimeout(cooldownTimer.current);
+      cooldownTimer.current = setTimeout(() => setIsOnCooldown(false), COOLDOWN_MS);
       try {
         const res = await fetch("/api/sequence", {
           method: "POST",
@@ -58,7 +65,8 @@ export default function GamePlanPage() {
     }
     const items = library.filter((i) => session.selectedIds.includes(i.id));
     saveLastPrep(session.selectedIds, session.timeWindow);
-    setSelectedItems(items);
+    // localStorage hydration runs once on mount; React 18 batches these updates.
+    setSelectedItems(items); // eslint-disable-line react-hooks/set-state-in-effect
     setHydrated(true);
     fetchGamePlan(items, session.timeWindow);
   }, [router, fetchGamePlan]);
