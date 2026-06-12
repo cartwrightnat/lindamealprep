@@ -13,6 +13,29 @@ import libraryData from "@/data/library.json";
 const library = libraryData as Item[];
 const COOLDOWN_MS = 5000;
 
+// Warm, distinct palette for up to 8 recipes
+const RECIPE_COLORS = [
+  "#C24E1A", // spice
+  "#4A6741", // herb
+  "#D97706", // amber
+  "#7C3AED", // violet
+  "#0369A1", // blue
+  "#BE185D", // rose
+  "#0F766E", // teal
+  "#92400E", // brown
+];
+
+/** Builds a stable recipeName → hex color map from the ordered step list. */
+function buildColorMap(steps: Step[]): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const step of steps) {
+    if (step.recipeName && !map.has(step.recipeName)) {
+      map.set(step.recipeName, RECIPE_COLORS[map.size % RECIPE_COLORS.length]);
+    }
+  }
+  return map;
+}
+
 export default function GamePlanPage() {
   const router = useRouter();
   const [selectedItems, setSelectedItems] = useState<Item[]>([]);
@@ -73,6 +96,7 @@ export default function GamePlanPage() {
 
   if (!hydrated) return null;
 
+  const colorMap = buildColorMap(steps);
   const totalHandsOn = steps.reduce((s, step) => s + step.durationMinutes, 0);
 
   return (
@@ -103,13 +127,40 @@ export default function GamePlanPage() {
           <>
             <div className="space-y-3">
               {steps.map((step) => (
-                <PrepStepCard key={step.order} step={step} />
+                <PrepStepCard
+                  key={step.order}
+                  step={step}
+                  color={step.recipeName ? colorMap.get(step.recipeName) : undefined}
+                />
               ))}
             </div>
+
             {steps.length > 0 && (
-              <p className="mt-4 text-sm text-text-secondary text-right">
-                Total hands-on: <strong>{totalHandsOn} min</strong>
-              </p>
+              <>
+                <p className="mt-4 text-sm text-text-secondary text-right">
+                  Total hands-on: <strong>{totalHandsOn} min</strong>
+                </p>
+
+                {/* Color legend */}
+                {colorMap.size > 0 && (
+                  <div className="mt-6 p-4 rounded-card border border-border bg-surface">
+                    <p className="text-xs font-semibold text-text-secondary uppercase tracking-wide mb-3">
+                      Recipes
+                    </p>
+                    <div className="flex flex-wrap gap-3">
+                      {Array.from(colorMap.entries()).map(([name, color]) => (
+                        <div key={name} className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full shrink-0"
+                            style={{ backgroundColor: color }}
+                          />
+                          <span className="text-xs text-text-primary">{name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

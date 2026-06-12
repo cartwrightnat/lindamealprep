@@ -26,6 +26,7 @@ export interface Step {
   storageBadge?: string;
   items: string[]; // item ids involved in this step
   durationMinutes: number;
+  recipeName?: string; // which recipe this step belongs to (for color coding)
 }
 
 export interface Session {
