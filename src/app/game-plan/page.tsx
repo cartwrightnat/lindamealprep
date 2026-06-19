@@ -10,7 +10,7 @@ import type { Item, Step } from "@/lib/types";
 import libraryData from "@/data/library.json";
 
 const library = libraryData as Item[];
-const COOLDOWN_MS = 5000;
+const COOLDOWN_MS = 5000; // 5s
 
 // Warm, distinct palette for up to 8 recipes
 const RECIPE_COLORS = [
