@@ -9,8 +9,22 @@ const library = libraryData as Item[];
 let lastCallAt = 0;
 const COOLDOWN_MS = 5000;
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL ?? "claude-haiku-4-5";
+
+/**
+ * Returns a human-readable error string if ANTHROPIC_API_KEY is missing or
+ * still set to the placeholder value, otherwise null.
+ * Exported for unit testing without requiring Next.js mocks.
+ */
+export function getConfigError(): string | null {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key || key.trim() === "") return "ANTHROPIC_API_KEY is not set";
+  if (key === "placeholder_for_local_dev")
+    return "ANTHROPIC_API_KEY is a placeholder — replace it with a real key from console.anthropic.com";
+  return null;
+}
+
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 function buildPrompt(items: Item[], timeWindow: number): string {
   const itemDescriptions = items
@@ -83,6 +97,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No valid item IDs" }, { status: 400 });
   }
 
+  const configError = getConfigError();
+  if (configError) {
+    console.error("[/api/sequence]", configError);
+    return NextResponse.json({ error: configError }, { status: 503 });
+  }
+
   lastCallAt = now;
 
   try {
@@ -96,8 +116,8 @@ export async function POST(req: NextRequest) {
     const parsed = JSON.parse(text) as { steps: Step[] };
 
     return NextResponse.json({ steps: parsed.steps });
-  } catch {
-    // Fall through — client will use offline sequencer
+  } catch (err) {
+    console.error("[/api/sequence] AI call failed:", err);
     return NextResponse.json({ error: "AI sequencer unavailable" }, { status: 500 });
   }
 }
