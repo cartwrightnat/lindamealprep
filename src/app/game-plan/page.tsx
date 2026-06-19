@@ -74,6 +74,7 @@ export default function GamePlanPage() {
         setSteps(data.steps);
         setFallbackReason(null);
       } catch (err) {
+        if (process.env.NEXT_PUBLIC_DEBUG_NO_FALLBACK === "true") throw err;
         setSteps(sequence(items));
         const reason = (err as { reason?: string }).reason;
         setFallbackReason(reason === "misconfigured" ? "misconfigured" : "unavailable");

@@ -19,8 +19,6 @@ const MODEL = process.env.CLAUDE_MODEL ?? "claude-haiku-4-5";
 export function getConfigError(): string | null {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key || key.trim() === "") return "ANTHROPIC_API_KEY is not set";
-  if (key === "placeholder_for_local_dev")
-    return "ANTHROPIC_API_KEY is a placeholder — replace it with a real key from console.anthropic.com";
   return null;
 }
 
