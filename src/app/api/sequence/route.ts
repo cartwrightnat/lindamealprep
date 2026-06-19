@@ -28,13 +28,18 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 function buildPrompt(items: Item[], timeWindow: number): string {
   const itemDescriptions = items
-    .map(
-      (i) =>
+    .map((i) => {
+      const ingredientList = i.ingredients
+        .map((ing) => `${ing.quantity} ${ing.unit} ${ing.name}`)
+        .join(", ");
+      return (
         `- ${i.name} (id: ${i.id}): ${i.handsonMinutes} min hands-on, ${i.totalMinutes} min total` +
         (i.equipment.length ? `, equipment: ${i.equipment.join(", ")}` : "") +
         (i.ovenTemp ? `, oven ${i.ovenTemp}°F` : "") +
-        `, storage: ${i.storage.join("/")}`
-    )
+        `, storage: ${i.storage.join("/")}` +
+        (ingredientList ? `\n  Ingredients: ${ingredientList}` : "")
+      );
+    })
     .join("\n");
 
   return `You are a meal prep coach creating a fully integrated, parallel-optimized action plan for a ${timeWindow}-minute prep session.
@@ -108,7 +113,7 @@ export async function POST(req: NextRequest) {
   try {
     const message = await client.messages.create({
       model: MODEL,
-      max_tokens: 1024,
+      max_tokens: 4096,
       messages: [{ role: "user", content: buildPrompt(items, body.timeWindow) }],
     });
 

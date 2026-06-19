@@ -124,4 +124,24 @@ describe("sequence", () => {
     expect(ids).toContain("a");
     expect(ids).toContain("b");
   });
+
+  it("interleaves two all-hands-on items instead of doing them sequentially", () => {
+    const items = [
+      makeItem({ id: "alpha", name: "Alpha", handsonMinutes: 20, totalMinutes: 20 }),
+      makeItem({ id: "beta", name: "Beta", handsonMinutes: 15, totalMinutes: 15 }),
+    ];
+    const steps = sequence(items);
+    // Both items must appear in the steps
+    const alphaSteps = steps.filter((s) => s.items.includes("alpha"));
+    const betaSteps = steps.filter((s) => s.items.includes("beta"));
+    expect(alphaSteps.length).toBeGreaterThan(0);
+    expect(betaSteps.length).toBeGreaterThan(0);
+
+    // At least one Beta step must appear before Alpha's final step (interleaving)
+    const alphaFinalIdx = steps.map((s, i) => ({ s, i }))
+      .filter(({ s }) => s.items.includes("alpha"))
+      .at(-1)!.i;
+    const firstBetaIdx = steps.findIndex((s) => s.items.includes("beta"));
+    expect(firstBetaIdx).toBeLessThan(alphaFinalIdx);
+  });
 });
