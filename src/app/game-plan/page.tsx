@@ -40,7 +40,7 @@ export default function GamePlanPage() {
   const [selectedItems, setSelectedItems] = useState<Item[]>([]);
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(false);
-  const [usingFallback, setUsingFallback] = useState(false);
+  const [fallbackReason, setFallbackReason] = useState<"misconfigured" | "unavailable" | null>(null);
   const [isOnCooldown, setIsOnCooldown] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const cooldownTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -66,13 +66,17 @@ export default function GamePlanPage() {
             timeWindow,
           }),
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        if (!res.ok) {
+          const reason = res.status === 503 ? "misconfigured" : "unavailable";
+          throw Object.assign(new Error(`HTTP ${res.status}`), { reason });
+        }
         const data = await res.json();
         setSteps(data.steps);
-        setUsingFallback(false);
-      } catch {
+        setFallbackReason(null);
+      } catch (err) {
         setSteps(sequence(items));
-        setUsingFallback(true);
+        const reason = (err as { reason?: string }).reason;
+        setFallbackReason(reason === "misconfigured" ? "misconfigured" : "unavailable");
       } finally {
         setLoading(false);
       }
@@ -117,10 +121,14 @@ export default function GamePlanPage() {
           </button>
         </div>
 
-        {usingFallback && !loading && (
+        {fallbackReason && !loading && (
           <div className="mb-4 px-4 py-3 rounded-card border border-amber-300 bg-amber-50 text-amber-800 text-sm flex items-start gap-2">
             <span aria-hidden="true">⚠</span>
-            <span>AI unavailable — showing offline schedule (less detailed). Tap Regenerate to try again.</span>
+            <span>
+              {fallbackReason === "misconfigured"
+                ? "AI not configured — set ANTHROPIC_API_KEY in your environment variables, then tap Regenerate."
+                : "AI unavailable — showing offline schedule (less detailed). Tap Regenerate to try again."}
+            </span>
           </div>
         )}
 
