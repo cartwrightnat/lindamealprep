@@ -118,7 +118,8 @@ export async function POST(req: NextRequest) {
     });
 
     const text = message.content[0].type === "text" ? message.content[0].text : "";
-    const parsed = JSON.parse(text) as { steps: Step[] };
+    const jsonText = text.trim().replace(/^```(?:json)?\s*/, "").replace(/```\s*$/, "");
+    const parsed = JSON.parse(jsonText) as { steps: Step[] };
 
     return NextResponse.json({ steps: parsed.steps });
   } catch (err) {
