@@ -3,6 +3,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import libraryData from "@/data/library.json";
 import type { Item, Step } from "@/lib/types";
 
+export const maxDuration = 60;
+
 const library = libraryData as Item[];
 
 // Module-level rate limiting — minimum 5s between calls
